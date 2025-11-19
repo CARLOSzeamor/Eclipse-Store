@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Carrinho - Eclipse Store</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">Eclipse Store</a>
+    <nav class="nav">
+      <button id="favorites-btn" aria-label="Favoritos">♥ <span id="fav-count">0</span></button>
+      <a id="cart-link" href="cart.html" aria-label="Carrinho">🛒 <span id="cart-count">0</span></a>
+      <div id="user-area">
+        <a id="login-link" href="login.html">Entrar</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container cart-page">
+    <h1>Carrinho</h1>
+    <section id="cart-list" class="cart-list"></section>
+
+    <section class="summary" aria-live="polite">
+      <div>Subtotal: <span id="cart-subtotal">R$ 0.00</span></div>
+      <div>Total: <strong id="cart-total">R$ 0.00</strong></div>
+
+      <div class="cart-actions">
+        <button id="clear-cart">Limpar Carrinho</button>
+        <button id="checkout" class="primary">Finalizar Compra</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" role="status" aria-live="polite" class="toast hidden"></div>
+
+  <script src="app.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      ui.renderHeader();
+      ui.renderCartPage(document.getElementById('cart-list'));
+
+      // Redireciona para checkout.html
+      const checkoutBtn = document.getElementById('checkout');
+      if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => {
+          if (cart.items.length === 0) {
+            ui.toast('Seu carrinho está vazio!');
+            return;
+          }
+          // Apenas redireciona — o carrinho é mantido para o checkout
+          location.href = 'checkout.html';
+        });
+      }
+    });
+  </script>
+</body>
+</html>

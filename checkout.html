@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pagamento - Eclipse Store</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">Eclipse Store</a>
+    <nav class="nav">
+      <button id="favorites-btn" aria-label="Favoritos">♥ <span id="fav-count">0</span></button>
+      <a id="cart-link" href="cart.html" aria-label="Carrinho">🛒 <span id="cart-count">0</span></a>
+      <div id="user-area">
+        <a id="login-link" href="login.html">Entrar</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Finalizar Pagamento</h1>
+
+    <section class="card" id="payment-section">
+      <h2>Resumo do Pedido</h2>
+      <div id="order-summary"></div>
+      <div id="order-total" style="margin-top:1rem;font-weight:700;"></div>
+    </section>
+
+    <section class="card" style="margin-top:1rem;">
+      <h2>Dados do Comprador</h2>
+      <form id="checkout-form">
+        <label>Nome Completo</label>
+        <input type="text" id="buyer-name" required>
+
+        <label>Email</label>
+        <input type="email" id="buyer-email" required>
+
+        <label>Endereço</label>
+        <input type="text" id="buyer-address" required>
+
+        <label>CEP</label>
+        <input type="text" id="buyer-cep" required>
+
+        <h3 style="margin-top:1rem;">Forma de Pagamento</h3>
+        <select id="payment-method" required>
+          <option value="cartao">Cartão de Crédito (simulado)</option>
+          <option value="pix">PIX (simulado)</option>
+          <option value="boleto">Boleto Bancário (simulado)</option>
+        </select>
+
+        <button type="submit" class="primary" style="margin-top:1rem;">Finalizar Pagamento</button>
+      </form>
+    </section>
+
+    <section id="payment-result" class="card" style="display:none;margin-top:1rem;"></section>
+  </main>
+
+  <div id="toast" role="status" aria-live="polite" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      ui.renderHeader();
+      renderCheckout();
+    });
+
+    function renderCheckout() {
+      const cartItems = JSON.parse(localStorage.getItem('loja_cart_v1') || '[]');
+      const container = document.getElementById('order-summary');
+      const totalEl = document.getElementById('order-total');
+
+      if (cartItems.length === 0) {
+        container.innerHTML = "<p>Seu carrinho está vazio.</p>";
+        totalEl.textContent = "";
+        return;
+      }
+
+      let total = 0;
+      container.innerHTML = cartItems.map(item => {
+        const subtotal = item.price * item.qty;
+        total += subtotal;
+        return `
+          <div class="cart-item">
+            <img src="${item.img}" alt="${item.title}">
+            <div style="flex:1">
+              <strong>${item.title}</strong><br>
+              <span>${item.qty}x ${money(item.price)}</span>
+            </div>
+            <div><strong>${money(subtotal)}</strong></div>
+          </div>
+        `;
+      }).join("");
+
+      totalEl.textContent = "Total: " + money(total);
+    }
+
+    // Simular pagamento
+    document.getElementById("checkout-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("buyer-name").value.trim();
+      const email = document.getElementById("buyer-email").value.trim();
+      const address = document.getElementById("buyer-address").value.trim();
+      const cep = document.getElementById("buyer-cep").value.trim();
+      const method = document.getElementById("payment-method").value;
+
+      if (!name || !email || !address || !cep) {
+        ui.toast("Preencha todos os campos corretamente.");
+        return;
+      }
+
+      const paymentResult = document.getElementById("payment-result");
+      paymentResult.style.display = "block";
+
+      let msg = "";
+      if (method === "cartao") {
+        msg = `<p>✅ Pagamento no cartão aprovado! Obrigado, ${name}.</p>`;
+      } else if (method === "pix") {
+        msg = `<p>💸 Pagamento via PIX gerado. Use a chave <strong>pix@eclipse-store.com</strong>.</p>`;
+      } else {
+        msg = `<p>📄 Boleto gerado! Válido por 3 dias. Obrigado pela compra, ${name}.</p>`;
+      }
+
+      paymentResult.innerHTML = `
+        <h2>Status do Pagamento</h2>
+        ${msg}
+        <p>Total pago: <strong>${document.getElementById("order-total").textContent}</strong></p>
+        <a href="index.html" class="btn primary" style="margin-top:1rem;display:inline-block;">Voltar à Loja</a>
+      `;
+
+      // limpar carrinho
+      localStorage.removeItem("loja_cart_v1");
+      ui.updateHeaderCounts();
+    });
+  </script>
+</body>
+</html>
